@@ -28,9 +28,9 @@ public class CrimeFragment extends Fragment {
     private CheckBox mSolvedCheckBox;
 
     /**
-     Fragment.onCreate(Bundle)是公共方法，而Activity.onCreate(Bundle)是受保
-     护方法。 Fragment.onCreate(Bundle)方法及其他Fragment生命周期方法必须是公共方法，因
-     为托管fragment的activity要调用它们。
+     * Fragment.onCreate(Bundle)是公共方法，而Activity.onCreate(Bundle)是受保
+     * 护方法。 Fragment.onCreate(Bundle)方法及其他Fragment生命周期方法必须是公共方法，因
+     * 为托管fragment的activity要调用它们。
      */
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -39,12 +39,12 @@ public class CrimeFragment extends Fragment {
     }
 
     /**
-     fragment的视图并没有在Fragment.onCreate(Bundle)方法中生成。虽然我们在该方
-     法中配置了fragment实例，但创建和配置fragment视图是另一个Fragment生命周期方法onCreateView完成的
-
-     该 方 法 实 例 化 fragment 视 图 的 布 局 ， 然 后 将 实 例 化 的 View 返 回 给 托 管 activity 。
-     LayoutInflater及ViewGroup是实例化布局的必要参数。 Bundle用来存储恢复数据，可供该方
-     法从保存状态下重建视图。
+     * fragment的视图并没有在Fragment.onCreate(Bundle)方法中生成。虽然我们在该方
+     * 法中配置了fragment实例，但创建和配置fragment视图是另一个Fragment生命周期方法onCreateView完成的
+     * <p>
+     * 该 方 法 实 例 化 fragment 视 图 的 布 局 ， 然 后 将 实 例 化 的 View 返 回 给 托 管 activity 。
+     * LayoutInflater及ViewGroup是实例化布局的必要参数。 Bundle用来存储恢复数据，可供该方
+     * 法从保存状态下重建视图。
      */
     @Nullable
     @Override
@@ -81,6 +81,7 @@ public class CrimeFragment extends Fragment {
         mDateButton.setEnabled(false);
 
         mSolvedCheckBox = view.findViewById(R.id.crime_solved);
+        mSolvedCheckBox.setChecked(mCrime.isSolved());
         mSolvedCheckBox.setOnCheckedChangeListener(new OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
