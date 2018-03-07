@@ -1,8 +1,12 @@
 package android.me.lj.criminalintent;
 
+import android.app.Activity;
+import android.content.Intent;
+import android.me.lj.criminalintent.utils.DateFormatUtil;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
@@ -13,6 +17,7 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 
+import java.util.Date;
 import java.util.UUID;
 
 import static android.widget.CompoundButton.*;
@@ -30,6 +35,9 @@ public class CrimeFragment extends Fragment {
     private CheckBox mSolvedCheckBox;
 
     private static final String ARG_CRIME_ID = "crime_id";
+    private static final String DIALOG_DATE = "DialogDate";
+
+    private static final int REQUEST_DATE = 0;
 
     public static CrimeFragment newInstance(UUID crimeId) {
 
@@ -104,8 +112,36 @@ public class CrimeFragment extends Fragment {
         });
 
         mDateButton = view.findViewById(R.id.crime_date);
-        mDateButton.setText(mCrime.getDate().toString());
-        mDateButton.setEnabled(false);
+        updateDate();
+        mDateButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                FragmentManager fragmentManager = getFragmentManager();
+                DatePickerFragment dialog = DatePickerFragment.newInstance(mCrime.getDate());
+
+                /**
+                 * 设置目标fragment
+                 * 该方法有两个参数：目标fragment以及类似于传入startActivityForResult(...)方法的请求代码。
+                 * 需要时，目标fragment使用请求代码确认是哪个fragment在回传数据。
+                 */
+                dialog.setTargetFragment(CrimeFragment.this, REQUEST_DATE);
+
+                /**
+                 * DialogFragment实例也是由托管activity的FragmentManager管理的。
+                 *
+                 * 要将DialogFragment添加给FragmentManager管理并放置到屏幕上，可调用fragment实例的以下方法：
+                 *      public void show(FragmentManager manager, String tag)
+                 *      public void show(FragmentTransaction transaction, String tag)
+                 *
+                 * String参数可唯一识别FragmentManager队列中的DialogFragment。
+                 *
+                 * 两个方法都可以：
+                 *      如果传入FragmentTransaction参数，你自己负责创建并提交事务；
+                 *      如果传入FragmentManager参数，系统会自动创建并提交事务。
+                 */
+                dialog.show(fragmentManager, DIALOG_DATE);
+            }
+        });
 
         mSolvedCheckBox = view.findViewById(R.id.crime_solved);
         mSolvedCheckBox.setChecked(mCrime.isSolved());
@@ -117,5 +153,24 @@ public class CrimeFragment extends Fragment {
         });
 
         return view;
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (resultCode != Activity.RESULT_OK) {
+            return;
+        }
+
+        if (requestCode == REQUEST_DATE) {
+            Date date = (Date) data.getSerializableExtra(DatePickerFragment.EXTRA_DATE);
+            mCrime.setDate(date);
+            updateDate();
+        }
+    }
+
+    private void updateDate() {
+        mDateButton.setText(DateFormatUtil.format(mCrime.getDate()));
     }
 }

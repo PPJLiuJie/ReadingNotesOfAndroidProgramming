@@ -58,6 +58,10 @@
 
 第十一章第三节：11.3 ViewPager的工作原理
 
+第十二章：对话框
+
+第十二章第二节：12.2.2 更为灵活的DialogFragment视图展现 重要！！！
+
 第十五章第四节：15.4 使用隐式Intent
 
 第十六章第五节：16.5 功能声明：<uses-feature android:name=“android.hardware.camera”

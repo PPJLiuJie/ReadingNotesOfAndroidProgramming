@@ -1,6 +1,7 @@
 package android.me.lj.criminalintent;
 
 import android.content.Intent;
+import android.me.lj.criminalintent.utils.DateFormatUtil;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -13,9 +14,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import java.text.SimpleDateFormat;
 import java.util.List;
-import java.util.TimeZone;
 
 /**
  * Created by Administrator on 2018/3/5 0005.
@@ -111,12 +110,7 @@ public class CrimeListFragment extends Fragment {
             mCrime = crime;
             mTitleTextView.setText(mCrime.getTitle());
 
-            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss EEEE");
-            // 设置时区为东八区
-            format.setTimeZone(TimeZone.getTimeZone("GMT+8"));
-            String dateStr = format.format(mCrime.getDate());
-
-            mDateTextView.setText(dateStr);
+            mDateTextView.setText(DateFormatUtil.format(mCrime.getDate()));
             mSolvedImageView.setVisibility(mCrime.isSolved() ? View.VISIBLE : View.INVISIBLE);
         }
 
