@@ -13,6 +13,8 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 
+import java.util.UUID;
+
 import static android.widget.CompoundButton.*;
 
 /**
@@ -27,6 +29,28 @@ public class CrimeFragment extends Fragment {
     private Button mDateButton;
     private CheckBox mSolvedCheckBox;
 
+    private static final String ARG_CRIME_ID = "crime_id";
+
+    public static CrimeFragment newInstance(UUID crimeId) {
+
+        Bundle args = new Bundle();
+        args.putSerializable(ARG_CRIME_ID, crimeId);
+
+        CrimeFragment fragment = new CrimeFragment();
+
+        /**
+         * 为什么要使用fragment argument？为什么不直接在CrimeFragment里创建一个实例变量呢？
+         *
+         * 创建实例变量的方式并不可靠。这是因为，在操作系统重建fragment时（设备配置发生改变）用户暂时离开当前应用（操作系统按需回收内存），
+         * 任何实例变量都将不复存在。尤其是内存不够，操作系统强制杀掉应用的情况，可以说是无人能挡。
+         * 因此，可以说，fragment argument就是为应对上述场景而生。
+         */
+        fragment.setArguments(args);
+
+        return fragment;
+    }
+
+
     /**
      * Fragment.onCreate(Bundle)是公共方法，而Activity.onCreate(Bundle)是受保
      * 护方法。 Fragment.onCreate(Bundle)方法及其他Fragment生命周期方法必须是公共方法，因
@@ -35,7 +59,9 @@ public class CrimeFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mCrime = new Crime();
+
+        UUID crimeId = (UUID) getArguments().getSerializable(ARG_CRIME_ID);
+        mCrime = CrimeLab.getInstance(getActivity()).getCrime(crimeId);
     }
 
     /**
@@ -59,6 +85,7 @@ public class CrimeFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_crime, container, false);
 
         mTitleField = view.findViewById(R.id.crime_title);
+        mTitleField.setText(mCrime.getTitle());
         mTitleField.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
