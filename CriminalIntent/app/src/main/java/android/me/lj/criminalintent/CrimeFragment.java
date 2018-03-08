@@ -72,6 +72,15 @@ public class CrimeFragment extends Fragment {
         mCrime = CrimeLab.getInstance(getActivity()).getCrime(crimeId);
     }
 
+    @Override
+    public void onPause() {
+        super.onPause();
+        /**
+         * 修改完成后，你需要刷新CrimeLab中的Crime数据。这可以通过覆盖CrimeFragment.onPause()方法完成
+         */
+        CrimeLab.getInstance(getActivity()).updateCrime(mCrime);
+    }
+
     /**
      * fragment的视图并没有在Fragment.onCreate(Bundle)方法中生成。虽然我们在该方
      * 法中配置了fragment实例，但创建和配置fragment视图是另一个Fragment生命周期方法onCreateView完成的

@@ -39,26 +39,19 @@
 第十章第二节：10.2 fragment argument
 
 第十章第五节：10.5 为什么要使用fragment argument
-
-
-
-
-第十章第四节：10.4 通过fragment获取返回结果
-				启动：
-				Fragment.startActivityForResult(…)
-				覆盖：
-				Fragment.onActivityResult(…)
-				但是，Fragment没有setResult(…)方法
-
-
-
-
 				
 第十一章第二节：11.2 FragmentStatePagerAdapter和FragmentPagerAdapter的区别
 
 第十一章第三节：11.3 ViewPager的工作原理
 
 第十二章：对话框
+
+第十二章第二节：12.2 fragment间传递数据
+				启动：
+				Fragment.startActivityForResult(…)
+				覆盖：
+				Fragment.onActivityResult(…)
+				但是，Fragment没有setResult(…)方法
 
 第十二章第二节：12.2.2 更为灵活的DialogFragment视图展现 重要！！！
 
