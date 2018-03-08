@@ -6,9 +6,13 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
@@ -46,6 +50,21 @@ public class CrimeListFragment extends Fragment {
 
     private CrimeAdapter mAdapter;
 
+    private boolean mSubTitleVisible;
+    private static final String SAVED_SUBTITLE_VISIBLE = "subtitle";
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        /**
+         * Fragment.onCreateOptionsMenu(Menu, MenuInflater)方法是由FragmentManager负责调用的。
+         * 因此，当activity接收到操作系统的onCreateOptionsMenu(...)方法回调请求时，我们必须明确告诉FragmentManager：
+         *      其管理的fragment应接收onCreateOptionsMenu(...)方法的调用指令。要通知FragmentManager，需调用以下方法：
+         *      public void setHasOptionsMenu(boolean hasMenu)
+         */
+        setHasOptionsMenu(true);
+    }
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -62,6 +81,13 @@ public class CrimeListFragment extends Fragment {
          */
         mCrimeRecyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
+        /**
+         * 这里配合onSaveInstanceState(...)方法，解决屏幕旋转导致子标题消失的问题。
+         */
+        if (savedInstanceState != null) {
+            mSubTitleVisible = savedInstanceState.getBoolean(SAVED_SUBTITLE_VISIBLE);
+        }
+
         updateUI();
 
         return view;
@@ -71,6 +97,12 @@ public class CrimeListFragment extends Fragment {
     public void onResume() {
         super.onResume();
         updateUI();
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putBoolean(SAVED_SUBTITLE_VISIBLE, mSubTitleVisible);
     }
 
     private void updateUI() {
@@ -84,6 +116,85 @@ public class CrimeListFragment extends Fragment {
             mAdapter.notifyDataSetChanged();
         }
 
+        // 更新子标题
+        updateSubtitle();
+    }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        /**
+         * 调用MenuInflater.inflate(int, Menu)方法并传入菜单文件的资源ID，将布局文件中定义的菜单项目填充到Menu实例中。
+         */
+        inflater.inflate(R.menu.fragment_crime_list, menu);
+
+        MenuItem subTitleItem = menu.findItem(R.id.show_subtitle);
+        if (mSubTitleVisible) {
+            subTitleItem.setTitle(R.string.hide_subtitle);
+        } else {
+            subTitleItem.setTitle(R.string.show_subtitle);
+        }
+    }
+
+    /**
+     * 用户点击菜单中的菜单项时， fragment会收到onOptionsItemSelected(MenuItem)方法的回调请求。
+     * 传入该方法的参数是一个描述用户选择的MenuItem实例。
+     */
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        /**
+         * 菜单通常包含多个菜单项。通过检查菜单项ID，可确定被选中的是哪个菜单项，然后作出相应的响应。
+         * 这个ID实际就是在菜单定义文件中赋予菜单项的资源ID。
+         */
+        switch (item.getItemId()) {
+            case R.id.new_crime:
+                Crime crime = new Crime();
+                CrimeLab.getInstance(getActivity()).addCrime(crime);
+                Intent intent = CrimePagerActivity.newIntent(getActivity(), crime.getId());
+                startActivity(intent);
+                return true;
+
+            case R.id.show_subtitle:
+                mSubTitleVisible = !mSubTitleVisible;
+                /**
+                 * Declare that the options menu has changed, so should be recreated.
+                 * The onCreateOptionsMenu(Menu)} method will be called the next
+                 * time it needs to be displayed.
+                 */
+                getActivity().invalidateOptionsMenu();
+                updateSubtitle();
+                return true;
+
+            default:
+                return super.onOptionsItemSelected(item);
+            /**
+             * onOptionsItemSelected(MenuItem)方法返回的是布尔值。
+             * 一旦完成菜单项事件处理，该方法应返回true值以表明任务已完成。
+             * 另外，默认case表达式中，如果菜单项ID不存在，超类版本方法会被调用。
+             */
+        }
+    }
+
+    private void updateSubtitle() {
+        CrimeLab crimeLab = CrimeLab.getInstance(getActivity());
+        int crimeCount = crimeLab.getCrimes().size();
+        /**
+         * getString(int resId, Object...formatArgs)方法接受字符串资源中占位符的替换值，updateSubtitle()用它生成子标题字符串。
+         */
+//        String subTitle = getString(R.string.subtitle_format, crimeCount);
+
+//        if (crimeCount == 1 || crimeCount == 0) {
+//            subTitle = subTitle.substring(0, subTitle.length() - 1);
+//        }
+        // 第十三章第七节：复数字符串资源
+        String subTitle = getResources().getQuantityString(R.plurals.subtitle_plurals, crimeCount, crimeCount);
+
+        if (!mSubTitleVisible) {
+            subTitle = null;
+        }
+
+        AppCompatActivity activity = (AppCompatActivity) getActivity();
+        activity.getSupportActionBar().setSubtitle(subTitle);
     }
 
     /**
