@@ -61,3 +61,8 @@
 									android:required=“false”/>
 
 第二十一章：使用隐式的intent实现启动另一个应用的activity
+
+
+
+
+Bitmap、BitmapFactory的使用

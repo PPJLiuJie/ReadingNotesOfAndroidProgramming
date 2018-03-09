@@ -3,14 +3,17 @@ package android.me.lj.criminalintent;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.pm.ResolveInfo;
 import android.database.Cursor;
 import android.me.lj.criminalintent.utils.DateFormatUtil;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
+import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.content.FileProvider;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
@@ -20,8 +23,12 @@ import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 
+import java.io.File;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 import static android.widget.CompoundButton.*;
@@ -34,17 +41,22 @@ public class CrimeFragment extends Fragment {
 
     private Crime mCrime;
 
+    private File mPhotoFile;
+
     private EditText mTitleField;
     private Button mDateButton;
     private CheckBox mSolvedCheckBox;
     private Button mSuspectButton;
     private Button mReportButton;
+    private ImageButton mPhotoButton;
+    private ImageView mPhotoView;
 
     private static final String ARG_CRIME_ID = "crime_id";
     private static final String DIALOG_DATE = "DialogDate";
 
     private static final int REQUEST_DATE = 0;
     private static final int REQUEST_CONTACT = 1;
+    private static final int REQUEST_PHOTO = 2;
 
     public static CrimeFragment newInstance(UUID crimeId) {
 
@@ -77,6 +89,7 @@ public class CrimeFragment extends Fragment {
 
         UUID crimeId = (UUID) getArguments().getSerializable(ARG_CRIME_ID);
         mCrime = CrimeLab.getInstance(getActivity()).getCrime(crimeId);
+        mPhotoFile = CrimeLab.getInstance(getActivity()).getPhotoFile(mCrime);
     }
 
     @Override
@@ -215,6 +228,47 @@ public class CrimeFragment extends Fragment {
                 intent.putExtra(Intent.EXTRA_SUBJECT, getString(R.string.crime_report_subject));
                 intent = Intent.createChooser(intent, getString(R.string.send_report));
                 startActivity(intent);
+            }
+        });
+
+        mPhotoView = view.findViewById(R.id.crime_photo);
+        mPhotoButton = view.findViewById(R.id.crime_camera);
+
+        /**
+         * 要使用相机Intent，需要的intent操作是定义在MediaStore类中的ACTION_IMAGE_CAPTURE
+         */
+        final Intent captureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+
+        /**
+         * 是否有地方存储照片。
+         * 是否安装有相机应用。要确认是否有可用的相机应用，可找PackageManager确认是否有响应相机隐式intent的activity。
+         */
+        boolean canTakePhoto = (mPhotoFile != null && captureIntent.resolveActivity(packageManager) != null);
+        mPhotoButton.setEnabled(canTakePhoto);
+        mPhotoButton.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                /**
+                 * FileProvider.getUriForFile(...)会把本地文件路径转换为相机能看见的Uri形式。
+                 */
+                Uri uri = FileProvider.getUriForFile(getActivity(), "android.me.lj.criminalintent.fileprovider", mPhotoFile);
+                captureIntent.putExtra(MediaStore.EXTRA_OUTPUT, uri);
+
+                /**
+                 * 要实际写入文件，还需要给相机应用权限。
+                 * 为了授权，我们授予FLAG_GRANT_WRITE_URI_PERMISSION给所有cameraImage intent的目标activity，以此允许它们在Uri指定的位置写文件。
+                 */
+                List<ResolveInfo> cameraActivities = getActivity()
+                                                    .getPackageManager()
+                                                    .queryIntentActivities(captureIntent, PackageManager.MATCH_DEFAULT_ONLY);
+
+                for (ResolveInfo activity : cameraActivities) {
+                    getActivity().grantUriPermission(activity.activityInfo.packageName,
+                                                     uri,
+                                                     Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                }
+
+                startActivityForResult(captureIntent, REQUEST_PHOTO);
             }
         });
 

@@ -17,8 +17,23 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".CrimePagerActivity"
-            android:parentActivityName=".CrimeListActivity"/>
+        <activity
+            android:name=".CrimePagerActivity"
+            android:parentActivityName=".CrimeListActivity" />
+
+        <!--
+        exported = "false"属性就意味着，除了你自己以及你给予授权的人，其他任何人都不允许使用你的FileProvider
+        grantUriPermissions属性用来给其他应用授权，允许它们向你指定位置的URI （这个位置信息放在intent中对外发出）写入文件
+        -->
+        <provider
+            android:name="android.support.v4.content.FileProvider"
+            android:authorities="android.me.lj.criminalintent.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/files" />
+        </provider>
     </application>
 
 </manifest>
