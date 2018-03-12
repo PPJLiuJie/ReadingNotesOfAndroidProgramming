@@ -60,6 +60,8 @@
 第十六章第五节：16.5 功能声明：<uses-feature android:name=“android.hardware.camera”
 									android:required=“false”/>
 
+第十七章：双面板主从用户界面
+
 第二十一章：使用隐式的intent实现启动另一个应用的activity
 
 

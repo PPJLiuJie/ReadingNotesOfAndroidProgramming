@@ -53,6 +53,8 @@ public class CrimeFragment extends Fragment {
     private ImageButton mPhotoButton;
     private ImageView mPhotoView;
 
+    private static final String CRIME_AUTHORITY = "android.me.lj.criminalintent.fileprovider";
+
     private static final String ARG_CRIME_ID = "crime_id";
     private static final String DIALOG_DATE = "DialogDate";
 
@@ -255,7 +257,7 @@ public class CrimeFragment extends Fragment {
                 /**
                  * FileProvider.getUriForFile(...)会把本地文件路径转换为相机能看见的Uri形式。
                  */
-                Uri uri = FileProvider.getUriForFile(getActivity(), "android.me.lj.criminalintent.fileprovider", mPhotoFile);
+                Uri uri = FileProvider.getUriForFile(getActivity(), CRIME_AUTHORITY, mPhotoFile);
                 captureIntent.putExtra(MediaStore.EXTRA_OUTPUT, uri);
 
                 /**
@@ -321,7 +323,7 @@ public class CrimeFragment extends Fragment {
                 c.close();
             }
         } else if (requestCode == REQUEST_PHOTO) {
-            Uri uri = FileProvider.getUriForFile(getActivity(), "android.me.lj.criminalintent.fileprovider", mPhotoFile);
+            Uri uri = FileProvider.getUriForFile(getActivity(), CRIME_AUTHORITY, mPhotoFile);
             /**
              * 既然相机已保存了文件，那就再次调用权限，关闭文件访问。单词解释 revoke:撤销
              */

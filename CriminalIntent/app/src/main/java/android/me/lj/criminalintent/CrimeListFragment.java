@@ -1,5 +1,7 @@
 package android.me.lj.criminalintent;
 
+import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.me.lj.criminalintent.utils.DateFormatUtil;
 import android.os.Bundle;
@@ -52,6 +54,24 @@ public class CrimeListFragment extends Fragment {
 
     private boolean mSubTitleVisible;
     private static final String SAVED_SUBTITLE_VISIBLE = "subtitle";
+
+    private Callbacks mCallbacks;
+
+    public interface Callbacks {
+        void onCrimeSelected(Crime crime);
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        mCallbacks = (Callbacks) context;
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        mCallbacks = null;
+    }
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
@@ -151,8 +171,12 @@ public class CrimeListFragment extends Fragment {
             case R.id.new_crime:
                 Crime crime = new Crime();
                 CrimeLab.getInstance(getActivity()).addCrime(crime);
-                Intent intent = CrimePagerActivity.newIntent(getActivity(), crime.getId());
-                startActivity(intent);
+                /**
+                 * 只要新增Crime记录，列表就应该立即重新加载。
+                 * 这很有必要，因为在平板设备上，点击新增按钮后，列表依然可见
+                 */
+                updateUI();
+                mCallbacks.onCrimeSelected(crime);
                 return true;
 
             case R.id.show_subtitle:
@@ -228,9 +252,7 @@ public class CrimeListFragment extends Fragment {
 
         @Override
         public void onClick(View view) {
-            Intent intent = CrimePagerActivity.newIntent(getActivity(), mCrime.getId());
-            // 从 fragment 中 启 动 activity 类 似 于 从 activity 中 启 动 activity
-            startActivity(intent);
+            mCallbacks.onCrimeSelected(mCrime);
         }
     }
 
