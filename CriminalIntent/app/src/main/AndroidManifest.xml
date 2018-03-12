@@ -2,6 +2,15 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="android.me.lj.criminalintent">
 
+    <!--
+    我们在代码中使用了android:required属性。
+    默认情况下，声明要使用某个设备功能后，应用就无法支持那些无此功能的设备了，但这不适用于CriminalIntent应用。
+    这是因为，resolveActivity(...)方法可以判断设备是否支持拍照。如果不支持，就直接禁用拍照按钮。
+    无论如何，这里设置android:required属性为false，
+    Android系统因此就知道，尽管不带相机的设备会导致应用功能缺失，但应用仍然可以正常安装和使用。
+    -->
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"

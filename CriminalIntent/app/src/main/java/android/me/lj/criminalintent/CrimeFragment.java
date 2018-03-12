@@ -5,7 +5,9 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.me.lj.criminalintent.utils.DateFormatUtil;
+import android.me.lj.criminalintent.utils.PictureUtil;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.ContactsContract;
@@ -232,6 +234,8 @@ public class CrimeFragment extends Fragment {
         });
 
         mPhotoView = view.findViewById(R.id.crime_photo);
+        updatePhotoView();
+
         mPhotoButton = view.findViewById(R.id.crime_camera);
 
         /**
@@ -316,6 +320,13 @@ public class CrimeFragment extends Fragment {
             } finally {
                 c.close();
             }
+        } else if (requestCode == REQUEST_PHOTO) {
+            Uri uri = FileProvider.getUriForFile(getActivity(), "android.me.lj.criminalintent.fileprovider", mPhotoFile);
+            /**
+             * 既然相机已保存了文件，那就再次调用权限，关闭文件访问。单词解释 revoke:撤销
+             */
+            getActivity().revokeUriPermission(uri, Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+            updatePhotoView();
         }
     }
 
@@ -345,5 +356,21 @@ public class CrimeFragment extends Fragment {
                 mCrime.getTitle(), dateString, solvedString, suspect);
 
         return report;
+    }
+
+    private void updatePhotoView() {
+        if (mPhotoFile == null || !mPhotoFile.exists()) {
+            mPhotoView.setImageDrawable(null);
+        } else {
+            /**
+             * fragment刚启动时，无人知道PhotoView究竟有多大。
+             * onCreate(...)、 onStart()和onResume()方法启动后，才会有首个实例化布局出现。
+             * 也就在此时，显示在屏幕上的视图才会有大小尺寸。
+             *
+             * TODO 这里还是有问题，因为已经在布局文件中规定了PhotoView的长宽都为80dp，该怎么理解呢？？？
+             */
+            Bitmap bitmap = PictureUtil.getScaledBitmap(mPhotoFile.getPath(), getActivity());
+            mPhotoView.setImageBitmap(bitmap);
+        }
     }
 }
