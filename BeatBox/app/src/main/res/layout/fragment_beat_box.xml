@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+要在布局里使用数据绑定，首先要把一般布局改造为数据绑定布局。
+具体做法就是把整个布局定义放入<layout>标签
+
+<layout>告诉数据绑定工具：“这个布局由你来处理。
+”接到任务，数据绑定工具会帮你生成一个绑定类（binding class）。
+新产生的绑定类默认以布局文件命名。
+
+当前布局文件生成的绑定类为：FragmentBeatBoxBinding
+-->
+<layout
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/recycler_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+    </android.support.v7.widget.RecyclerView>
+</layout>
