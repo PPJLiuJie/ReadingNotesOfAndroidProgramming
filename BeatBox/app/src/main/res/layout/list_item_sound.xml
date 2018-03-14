@@ -1,7 +1,20 @@
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
+    <!--
+    在布局文件中声明数据对象
+    -->
+    <data>
+        <variable
+            name="viewModel"
+            type="android.me.lj.beatbox.SoundViewModel"/>
+    </data>
+    <!--
+    使用绑定操作符@{}就可以在布局文件中直接使用这些数据对象的值
+    viewModel.title实际就是viewModel.getTitle()的简写形式。
+    -->
     <Button
         android:layout_width="match_parent"
         android:layout_height="120dp"
+        android:text="@{viewModel.title}"
         tools:text="Sound name"/>
 </layout>
