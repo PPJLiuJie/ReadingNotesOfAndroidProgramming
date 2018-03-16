@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <!--
+        定义了一个背景为红色的圆形
+        -->
+        <shape android:shape="oval">
+            <solid android:color="@color/red" />
+        </shape>
+    </item>
+
+    <item>
+        <!--
+        定义了一个暗红色的圆环
+        -->
+        <shape android:shape="oval">
+            <stroke
+                android:width="4dp"
+                android:color="@color/dark_red" />
+        </shape>
+    </item>
+</layer-list>
