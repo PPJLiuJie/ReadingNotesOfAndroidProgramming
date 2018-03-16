@@ -1,11 +1,31 @@
 <resources>
 
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
-        <!-- Customize your theme here. -->
-        <item name="colorPrimary">@color/colorPrimary</item>
-        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
-        <item name="colorAccent">@color/colorAccent</item>
+    <style name="AppTheme" parent="Theme.AppCompat">
+        <!--
+        colorPrimary属性主要用于工具栏。由于应用名称是显示在工具栏上的， colorPrimary也可以称为应用品牌色。
+        colorPrimaryDark用于屏幕顶部的状态栏。注意，只有Lollipop(Android 5.0)以后的系统支持状态栏主题色。对于之前的系统，无论指定什么主题色，状态栏都是不变的黑底色。
+        colorAccent主要用于给EditText这样的组件着色，按钮组件不支持着色。这个主题色应该和colorPrimary形成反差效果。
+        -->
+        <item name="colorPrimary">@color/red</item>
+        <item name="colorPrimaryDark">@color/dark_red</item>
+        <item name="colorAccent">@color/gray</item>
+        <item name="android:windowBackground">@color/soothing_blue</item>
+        <item name="buttonStyle">@style/BeatBoxButton</item>
     </style>
 
+    <style name="BeatBoxButton" parent="Widget.AppCompat.Button">
+        <item name="android:background">@color/dark_blue</item>
+    </style>
+
+    <!--
+    BeatBoxButton.Strong的命名表明，这个新样式继承了BeatBoxButton样式的属性。
+    除了通过命名表示样式继承关系，也可以采用指定父样式的方式:
+    <style name="StrongBeatBoxButton" parent="@style/BeatBoxButton">
+        <item name="android:textStyle">bold</item>
+    </style>
+    -->
+    <style name="BeatBoxButton.Strong">
+        <item name="android:textStyle">bold</item>
+    </style>
 </resources>
