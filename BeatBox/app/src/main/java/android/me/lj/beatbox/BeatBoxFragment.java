@@ -31,6 +31,19 @@ public class BeatBoxFragment extends Fragment {
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        /**
+         * 为了应对设备配置变化， fragment有一个特殊方法可确保BeatBox实例不被销毁，这个方法就是retainInstance。
+         *
+         * fragment的retainInstance属性值默认为false，这表明其不会被保留。
+         * 因此，设备旋转时fragment会随托管activity一起被销毁并重建。
+         * 调用setRetainInstance(true)方法可保留fragment。
+         * 已保留的fragment不会随activity一起被销毁。
+         * 相反，它会一直保留，并在需要时原封不动地转给新的activity。
+         *
+         * 对于已保留的fragment实例，其全部实例变量（如mBeatBox）的值也会保持不变，因此可放心继续使用。
+         */
+        setRetainInstance(true);
+
         mBeatBox = new BeatBox(getActivity());
     }
 
@@ -54,6 +67,12 @@ public class BeatBoxFragment extends Fragment {
         binding.recyclerView.setAdapter(new SoundAdapter(mBeatBox.getSounds()));
 
         return binding.getRoot();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        mBeatBox.release();
     }
 
     private class SoundHolder extends RecyclerView.ViewHolder {

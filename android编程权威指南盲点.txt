@@ -64,9 +64,17 @@
 
 第二十章：数据绑定与MVVM
 
+
+第二十一章：单元测试
+
+
+
 第二十一章：使用隐式的intent实现启动另一个应用的activity
 
 
 
 
 Bitmap、BitmapFactory的使用
+onSaveInstaceState的使用！！！
+21.10：设备旋转和对象保存
+21.11 是否保留fragment
