@@ -80,3 +80,5 @@ Bitmap、BitmapFactory的使用
 onSaveInstaceState的使用！！！
 21.10：设备旋转和对象保存
 21.11 是否保留fragment
+
+activity的启动模式
