@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+为最大化利用ImageView的空间，应设置它的scaleType属性值为centerCrop。
+scaleType属性详解，参见：http://blog.csdn.net/larryl2003/article/details/6919513
+-->
+<ImageView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/item_image_view"
+    android:layout_width="match_parent"
+    android:layout_height="120dp"
+    android:layout_gravity="center"
+    android:scaleType="centerCrop" />
