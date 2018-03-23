@@ -7,11 +7,11 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,8 +23,14 @@ import java.util.List;
 public class PhotoGalleryFragment extends Fragment {
 
     private static final String TAG = "PhotoGalleryFragment";
+
     private RecyclerView mPhotoRecyclerView;
     private List<GalleryItem> mItems = new ArrayList<>();
+    /**
+     * ThumbnailDownloader的泛型参数支持任何对象，
+     * 但在这里， PhotoHolder最合适，因为该视图是最终显示下载图片的地方。
+     */
+    private ThumbnailDownload<PhotoHolder> mThumbnailDownload;
 
     public static PhotoGalleryFragment newInstance() {
         return new PhotoGalleryFragment();
@@ -39,6 +45,18 @@ public class PhotoGalleryFragment extends Fragment {
          */
         setRetainInstance(true);
         new FetchItemsTask().execute();
+
+        /**
+         * ThumbnailDownloader的getLooper()方法是在start()方法之后调用的。
+         * 这能保证线程就绪，避免潜在竞争（尽管极少发生）。
+         * 因为getLooper()方法能执行成功，说明onLooperPrepared()方法肯定早已完成。
+         * 这样，queueThumbnail()方法因Handler为空而调用失败的情况就能避免了。
+         */
+
+        mThumbnailDownload = new ThumbnailDownload<>();
+        mThumbnailDownload.start();
+        mThumbnailDownload.getLooper();
+        Log.i(TAG, "Background thread started");
     }
 
     @Nullable
@@ -56,6 +74,17 @@ public class PhotoGalleryFragment extends Fragment {
         setupAdapter();
 
         return view;
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        /**
+         * 在onDestroy()方法内调用quit()方法结束线程。这非常关键。
+         * 如不终止HandlerThread，它会一直运行下去，成为僵尸。
+         */
+        mThumbnailDownload.quit();
+        Log.i(TAG, "Background thread destroyed");
     }
 
     private void setupAdapter() {
@@ -111,6 +140,7 @@ public class PhotoGalleryFragment extends Fragment {
             GalleryItem galleryItem = mGalleryItems.get(position);
             Drawable plackholder = getResources().getDrawable(R.drawable.bill_up_close);
             holder.bindGalleryItem(plackholder);
+            mThumbnailDownload.queueThumbnail(holder, galleryItem.getUrl());
         }
 
         @Override
