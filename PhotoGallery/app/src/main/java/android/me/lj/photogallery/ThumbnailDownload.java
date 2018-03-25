@@ -40,9 +40,19 @@ public class ThumbnailDownload<T> extends HandlerThread {
      * 来自于主线程的Handler
      */
     private Handler mResponseHandler;
+    private ThumbnailDownloadListener mThumbnailDownloadListener;
 
-    public ThumbnailDownload() {
+    public interface ThumbnailDownloadListener<T> {
+        void onThumbnailDownloaded(T target, Bitmap thumbnail);
+    }
+
+    public void setThumbnailDownloadListener(ThumbnailDownloadListener<T> listener) {
+        mThumbnailDownloadListener = listener;
+    }
+
+    public ThumbnailDownload(Handler responseHandler) {
         super(TAG);
+        mResponseHandler = responseHandler;
     }
 
     @Override
@@ -50,6 +60,10 @@ public class ThumbnailDownload<T> extends HandlerThread {
         super.onLooperPrepared();
         /**
          * onLooperPrepared()是在Looper首次检查消息队列之前调用，所以该方法是创建Handler实现的好地方。
+         *
+         * Handler默认与当前线程的Looper相关联。
+         * 查看源码可知，onLooperPrepared()方法是在Thread的run方法中被调用的。
+         * 因此这个Handler会与子线程的Looper相关联。
          */
         mRequestHandler = new Handler() {
             @Override
@@ -87,12 +101,20 @@ public class ThumbnailDownload<T> extends HandlerThread {
     }
 
     /**
+     * 清除队列中的所有请求
+     */
+    public void clearQueue() {
+        mRequestHandler.removeMessages(MESSAGE_DOWNLOAD);
+        mRequestMap.clear();
+    }
+
+    /**
      * handleRequest()方法是下载执行的地方
      */
-    private void handleRequest(T target) {
+    private void handleRequest(final T target) {
 
         try {
-            String url = mRequestMap.get(target);
+            final String url = mRequestMap.get(target);
             if (url == null) {
                 return;
             }
@@ -100,8 +122,33 @@ public class ThumbnailDownload<T> extends HandlerThread {
             /**
              * 使用BitmapFactory把getUrlBytes(...)返回的字节数组转换为位图
              */
-            Bitmap bitmap = BitmapFactory.decodeByteArray(bitmapBytes, 0, bitmapBytes.length);
+            final Bitmap bitmap = BitmapFactory.decodeByteArray(bitmapBytes, 0, bitmapBytes.length);
             Log.i(TAG, "Bitmap created");
+
+            /**
+             * 一般来说在工作线程中执行耗时任务，当任务完成时，会返回UI线程，一般是更新UI。
+             * 这时有两种方法可以达到目的。
+             * 一种是handler.sendMessage。发一个消息，再根据消息，执行相关任务代码。
+             * 另一种是handler.post(r)。r是要执行的任务代码。意思就是说r的代码实际是在UI线程执行的。可以写更新UI的代码。（工作线程是不能更新UI的）
+             * 以上内容摘自百度：https://zhidao.baidu.com/question/550652187.html
+             */
+
+            mResponseHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    /**
+                     * 检查requestMap。这很有必要，因为RecyclerView会循环使用其视图。
+                     * 某个(target, url)键值对被put进Map，下载完成后被remove，然后该键值对有可能再次被put进map，循环反复。
+                     *
+                     * 检查mHasQuit值。如果ThumbnailDownloader已经退出，运行任何回调方法可能都不太安全。
+                     */
+                    if (mRequestMap.get(target) != url || mHasQuit) {
+                        return;
+                    }
+                    mRequestMap.remove(target);
+                    mThumbnailDownloadListener.onThumbnailDownloaded(target, bitmap);
+                }
+            });
         } catch (IOException e) {
             e.printStackTrace();
             Log.e(TAG, "Error downloading image", e);

@@ -1,8 +1,11 @@
 package android.me.lj.photogallery;
 
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.GridLayoutManager;
@@ -47,13 +50,26 @@ public class PhotoGalleryFragment extends Fragment {
         new FetchItemsTask().execute();
 
         /**
+         * Handler默认与当前线程的Looper相关联。
+         * 这个Handler是在onCreate(...)方法中创建的，所以它会与主线程的Looper相关联。
+         */
+        Handler responseHandler = new Handler();
+
+        /**
          * ThumbnailDownloader的getLooper()方法是在start()方法之后调用的。
          * 这能保证线程就绪，避免潜在竞争（尽管极少发生）。
          * 因为getLooper()方法能执行成功，说明onLooperPrepared()方法肯定早已完成。
          * 这样，queueThumbnail()方法因Handler为空而调用失败的情况就能避免了。
          */
 
-        mThumbnailDownload = new ThumbnailDownload<>();
+        mThumbnailDownload = new ThumbnailDownload<>(responseHandler);
+        mThumbnailDownload.setThumbnailDownloadListener(new ThumbnailDownload.ThumbnailDownloadListener<PhotoHolder>() {
+            @Override
+            public void onThumbnailDownloaded(PhotoHolder photoHolder, Bitmap bitmap) {
+                Drawable drawable = new BitmapDrawable(getResources(), bitmap);
+                photoHolder.bindGalleryItem(drawable);
+            }
+        });
         mThumbnailDownload.start();
         mThumbnailDownload.getLooper();
         Log.i(TAG, "Background thread started");
@@ -74,6 +90,17 @@ public class PhotoGalleryFragment extends Fragment {
         setupAdapter();
 
         return view;
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        /**
+         * 如果用户旋转屏幕，因PhotoHolder视图的失效， ThumbnailDownloader可能会挂起。
+         * 如果点击这些ImageView，就会发生异常。
+         * 既然视图已销毁，应该清空mThumbnailDownloader。
+         */
+        mThumbnailDownload.clearQueue();
     }
 
     @Override
@@ -138,8 +165,8 @@ public class PhotoGalleryFragment extends Fragment {
         @Override
         public void onBindViewHolder(PhotoHolder holder, int position) {
             GalleryItem galleryItem = mGalleryItems.get(position);
-            Drawable plackholder = getResources().getDrawable(R.drawable.bill_up_close);
-            holder.bindGalleryItem(plackholder);
+            Drawable placeholder = getResources().getDrawable(R.drawable.bill_up_close);
+            holder.bindGalleryItem(placeholder);
             mThumbnailDownload.queueThumbnail(holder, galleryItem.getUrl());
         }
 
