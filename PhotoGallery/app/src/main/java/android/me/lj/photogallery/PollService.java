@@ -27,6 +27,8 @@ public class PollService extends IntentService {
 
     private static final long POLL_INTERVAL_MS = TimeUnit.MINUTES.toMillis(1);
 
+    public static final String ACTION_SHOW_NOTIFICATION = "android.me.lj.photogallery.SHOW_NOTIFICATION";
+
     public static Intent newIntent(Context context) {
         return new Intent(context, PollService.class);
     }
@@ -75,6 +77,12 @@ public class PollService extends IntentService {
             alarmManager.cancel(pendingIntent);
             pendingIntent.cancel();
         }
+
+        /**
+         * BroadcastReceiver需要知道定时器的启停状态，但却无法调用本类中的isServiceAlarmOn来判断启停状态，
+         * 所以在这里将启停状态存入SharedPreference
+         */
+        QueryPreferences.setAlarmOn(context, isOn);
     }
 
     /**
@@ -158,6 +166,11 @@ public class PollService extends IntentService {
              * 参数二：Notification对象
              */
             notificationManager.notify(0, notification);
+
+            /**
+             * 只要有新的搜索结果，就发送自定义广播
+             */
+            sendBroadcast(new Intent(ACTION_SHOW_NOTIFICATION));
         }
 
         /**
