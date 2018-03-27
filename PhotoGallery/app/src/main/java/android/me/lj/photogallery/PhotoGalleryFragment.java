@@ -60,9 +60,6 @@ public class PhotoGalleryFragment extends Fragment {
 
         updateItems();
 
-        Intent intent = PollService.newIntent(getActivity());
-        getActivity().startService(intent);
-
         /**
          * Handler默认与当前线程的Looper相关联。
          * 这个Handler是在onCreate(...)方法中创建的，所以它会与主线程的Looper相关联。
@@ -155,7 +152,7 @@ public class PhotoGalleryFragment extends Fragment {
             }
         });
 
-        searchView.setOnClickListener(new View.OnClickListener() {
+        searchView.setOnSearchClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 /**
@@ -165,6 +162,13 @@ public class PhotoGalleryFragment extends Fragment {
                 searchView.setQuery(query, false);
             }
         });
+
+        MenuItem toggleItem = menu.findItem(R.id.menu_item_toggle_polling);
+        if (PollService.isServiceAlarmOn(getActivity())) {
+            toggleItem.setTitle(R.string.stop_polling);
+        } else {
+            toggleItem.setTitle(R.string.start_polling);
+        }
     }
 
     @Override
@@ -175,6 +179,16 @@ public class PhotoGalleryFragment extends Fragment {
                 QueryPreferences.setStoredQuery(getActivity(), null);
                 updateItems();
                 return true;
+
+            case R.id.menu_item_toggle_polling:
+                boolean shouldStartAlarm = !PollService.isServiceAlarmOn(getActivity());
+                PollService.setServiceAlarm(getActivity(), shouldStartAlarm);
+                /**
+                 * 让GalleryActivity刷新工具栏菜单选项
+                 */
+                getActivity().invalidateOptionsMenu();
+                return true;
+
             default:
                 return super.onOptionsItemSelected(item);
         }
