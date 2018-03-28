@@ -31,6 +31,17 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!--
+        给activity配置android:configChanges="keyboardHidden|orientation|screenSize"
+        能轻松搞定设备旋转的问题，那为什么不全面推广使用这个方法呢？原因如下：
+        1.如果横竖屏界面不同，设备发生旋转时，开发人员必须手动重新加载视图
+        2.你很有可能依赖configChanges配置，而不会去覆盖onSavedInstanceState(...)方法存储UI状态，因为低内存情况还是要考虑的。
+        -->
+        <activity
+            android:name=".PhotoPageActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize" />
+
         <service android:name=".PollService" />
         <!--
         使用receiver标签并在其中包含相应的intent-filter。
