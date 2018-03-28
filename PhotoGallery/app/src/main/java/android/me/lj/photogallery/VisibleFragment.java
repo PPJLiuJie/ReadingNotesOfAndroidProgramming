@@ -1,11 +1,12 @@
 package android.me.lj.photogallery;
 
+import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.support.v4.app.Fragment;
-import android.widget.Toast;
+import android.util.Log;
 
 /**
  * Created by Administrator on 2018/3/27.
@@ -28,7 +29,15 @@ public abstract class VisibleFragment extends Fragment {
          * 要在代码中配置IntentFilter，可以直接调用addCategory(String)、 addAction(String)和addDataPath(String)等方法。
          */
         IntentFilter filter = new IntentFilter(PollService.ACTION_SHOW_NOTIFICATION);
-        getActivity().registerReceiver(mOnShowNotification, filter);
+
+        /**
+         * registerReceiver()方法：
+         * 参数一：BroadcastReceiver对象
+         * 参数二：IntentFilter对象
+         * 参数三：权限。只有具备该权限才能收到广播
+         * 参数四：略
+         */
+        getActivity().registerReceiver(mOnShowNotification, filter, PollService.PERM_PRIVATE, null);
     }
 
     @Override
@@ -50,12 +59,21 @@ public abstract class VisibleFragment extends Fragment {
     }
 
     private BroadcastReceiver mOnShowNotification = new BroadcastReceiver() {
+        /**
+         * 如果此处的onRecive被调用，说明当前Fragment可见，也就是说当前应用可见。
+         */
         @Override
         public void onReceive(Context context, Intent intent) {
-            Toast.makeText(getActivity(),
-                    "Got a broadcast:" + intent.getAction(),
-                    Toast.LENGTH_LONG)
-                    .show();
+            /**
+             * 通知消息虽然很有用，但应用开着的时候不应该收到通知消息。
+             */
+            Log.i(TAG, "canceling notification");
+
+            /**
+             * 这里，我们需要取消通知信息。
+             * 这很简单，使用一个简单的整型结果码，将此要求告诉信息发送者就可以了。
+             */
+            setResultCode(Activity.RESULT_CANCELED);
         }
     };
 }

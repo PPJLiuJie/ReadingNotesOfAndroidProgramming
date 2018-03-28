@@ -1,5 +1,6 @@
 package android.me.lj.photogallery;
 
+import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.IntentService;
 import android.app.Notification;
@@ -11,7 +12,6 @@ import android.net.ConnectivityManager;
 import android.os.SystemClock;
 import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
-import android.support.v4.app.NotificationManagerCompat;
 import android.util.Log;
 
 import java.util.List;
@@ -28,6 +28,11 @@ public class PollService extends IntentService {
     private static final long POLL_INTERVAL_MS = TimeUnit.MINUTES.toMillis(1);
 
     public static final String ACTION_SHOW_NOTIFICATION = "android.me.lj.photogallery.SHOW_NOTIFICATION";
+
+    public static final String PERM_PRIVATE = "android.me.lj.photogallery.PRIVATE";
+
+    public static final String REQUEST_CODE = "REQUEST_CODE";
+    public static final String NOTIFICATION = "NOTIFICATION";
 
     public static Intent newIntent(Context context) {
         return new Intent(context, PollService.class);
@@ -154,29 +159,33 @@ public class PollService extends IntentService {
                     .build();
 
             /**
-             * 从当前context中取出一个NotificationManagerCompat实例
+             * 有新的所搜结果，发送有序广播
              */
-            NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
-            /**
-             * 贴出消息
-             * 参数一：标识符，在整个应用中该标识符应该唯一。
-             *        如果使用同一ID发送两条消息，则第二条消息会替换掉第一条消息。
-             *        实际开发中，如果要在Notification中显示进度条并实时更新进度，或者要实现其他动态效果，通过这个标识符可以实现
-             *
-             * 参数二：Notification对象
-             */
-            notificationManager.notify(0, notification);
-
-            /**
-             * 只要有新的搜索结果，就发送自定义广播
-             */
-            sendBroadcast(new Intent(ACTION_SHOW_NOTIFICATION));
+            showBackgroundNotification(0, notification);
         }
 
         /**
          * 存储最近一次获取结果的第一条数据的id
          */
         QueryPreferences.setLastResultId(this, resultId);
+    }
+
+    private void showBackgroundNotification(int requestCode, Notification notification) {
+        Intent intent = new Intent(ACTION_SHOW_NOTIFICATION);
+        intent.putExtra(REQUEST_CODE, requestCode);
+        intent.putExtra(NOTIFICATION, notification);
+
+        /**
+         * 发送有序广播
+         * 参数一：Intent对象
+         * 参数二：权限，即接受者所需要具备的权限。
+         * 参数三：略
+         * 参数四：略
+         * 参数五：结果代码的初始值
+         * 参数六：结果数据
+         * 参数七：结果附加值
+         */
+        sendOrderedBroadcast(intent, PERM_PRIVATE, null, null, Activity.RESULT_OK, null, null);
     }
 
     /**

@@ -2,9 +2,20 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="android.me.lj.photogallery">
 
+    <!--
+    使用protection level签名定义了自己的定制权限
+    -->
+    <permission
+        android:name="android.me.lj.photogallery.PRIVATE"
+        android:protectionLevel="signature" />
+
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <!--
+    获取权限
+    -->
+    <uses-permission android:name="android.me.lj.photogallery.PRIVATE" />
 
     <application
         android:allowBackup="true"
@@ -28,6 +39,20 @@
         <receiver android:name=".StartupReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+
+        <!--
+        保证NotificationReceiver最后一个接收目标broadcast,需要为它设置一个低优先级。
+        要让它最后一个运行，设置其优先级值为-999，这是用户能定义的最低优先级（-1000及以下值是系统保留值）。
+
+        NotificationReceiver仅限PhotoGallery应用内部使用，还需设置一个android:exported="false"属性值，以确证外部应用看不到它
+        -->
+        <receiver
+            android:name=".NotificationReceiver"
+            android:exported="false">
+            <intent-filter android:priority="-999">
+                <action android:name="android.me.lj.photogallery.SHOW_NOTIFICATION" />
             </intent-filter>
         </receiver>
     </application>
